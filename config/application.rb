@@ -15,5 +15,8 @@ module Urlshortener
     # Application configuration can go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded after loading
     # the framework and any gems in your application.
+
+    #Sets up activejob to use sidekiq, as opposed to creating works and sidekiq, etc
+    # config.active_job.queue_adapter = :sidekiq
   end
 end

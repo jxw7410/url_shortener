@@ -15,8 +15,8 @@
 class ShortURL < ApplicationRecord
     validates :url, :short_url, presence: true
     validates :url, uniqueness: true
-    validate :ensure_proper_url
-    validate :ensure_unique_short_url
+    validate :ensure_proper_url, on: :create 
+    validate :ensure_unique_short_url, on: :create
 
     # This is done so a randomly generated tinyURL is ensured if this is used. This is also pre-validation stage
     # Therefore by running, valid?, all errors will be checked before the instance is actually persisted into the database.
@@ -35,6 +35,6 @@ class ShortURL < ApplicationRecord
 
     # Not using uniqueness: true validation, so a custom error message can be used instead
     def ensure_unique_short_url
-        errors.add(:short_url, ' cannot be created. Please try again.') if self.class.find_by_short_url(self.short_url)
+        errors.add(:short_url, 'cannot be created. Please try again.') if self.class.find_by_short_url(self.short_url)
     end
 end

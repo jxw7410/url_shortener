@@ -7,14 +7,13 @@ class Api::ShortUrlsController < ApplicationController
     def create
         url = http_wrap(params[:url])
         @short_url = ShortURL.find_by_url(url)
-        debugger
         if @short_url
             render :show 
         else 
             @short_url = ShortURL.new_short_url(url)
-            debugger
             if @short_url.valid?
                 @short_url.save!
+                ScraperWorker.perform_async(url, @short_url.id)
                 render :show 
             else 
                 render @short_url.errors.full_messages, status: 422 
