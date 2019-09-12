@@ -13,28 +13,53 @@
 
 
 class ShortURL < ApplicationRecord
+    # callback to create a unique short_url
+    before_validation :ensure_unique_short_url, on: :create
     validates :url, :short_url, presence: true
-    validates :url, uniqueness: true
+    validates :url, length: {minimum: 10}
     validate :ensure_proper_url, on: :create 
-    validate :ensure_unique_short_url, on: :create
 
-    # This is done so a randomly generated tinyURL is ensured if this is used. This is also pre-validation stage
-    # Therefore by running, valid?, all errors will be checked before the instance is actually persisted into the database.
-    # SecureRandom string length is 4/3 of argument num. Currently set to length of 7, or 64^7 combinations
-    def self.new_short_url(url)
-        url_limit = 5 
-        new_short_url = self.new(url: url, short_url: "")
-        new_short_url.short_url = SecureRandom::urlsafe_base64(url_limit)
-        new_short_url
-    end
 
+    private 
+    BASE_62_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    
     # Make sure the URL has proper formatting based on URI standards.
     def ensure_proper_url
         errors.add(:url, 'provided is not properly formatted.') unless self.url =~ URI::regexp
     end
-
-    # Not using uniqueness: true validation, so a custom error message can be used instead
+    
     def ensure_unique_short_url
-        errors.add(:short_url, 'cannot be created. Please try again.') if self.class.find_by_short_url(self.short_url)
+        url_length = 7
+        # Send is used because for whatever reason, a private method cannot be accessed via a callback.
+        self.send('base62_encode', url_length)
+
+        # Basically if short_url by the small chance already exists, I want to try again
+        # with a high degree of randomness included.
+        # Also doubles as validation
+        # counter is set up incase something happened such that the database is getting packed
+        counter = 0
+        while self.class.find_by_short_url(self.short_url) || counter != 10
+            self.send('base62_encode', url_length, SecureRandom::urlsafe_base64)
+            counter += 1
+        end
+    end
+
+    def base62_encode(length, seed = "")
+        # Find out how many bits you need for the length of url desired
+        bits = (62 ** length).to_s(2).length 
+
+        # Create a MD5:hash, which always results in 128 bits
+        # MD5:hash returns a hex, which needs to be converted to binary
+        # Then the binary is converted back to an integer
+        num = Digest::MD5.hexdigest(self.url + seed)
+            .to_i(16)
+            .to_s(2)[0..bits]
+            .to_i(2)
+            
+        while self.short_url.length < length && num > 0
+            self.short_url << BASE_62_CHARS[num % 62]
+            num /= 62
+        end
+
     end
 end
