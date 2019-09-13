@@ -9,6 +9,7 @@
 #  count      :bigint           default(0)
 #  created_at :datetime         not null
 #  updated_at :datetime         not null
+#  expires_at :datetime
 #
 
 
@@ -17,49 +18,58 @@ class ShortURL < ApplicationRecord
     before_validation :ensure_unique_short_url, on: :create
     validates :url, :short_url, presence: true
     validates :url, length: {minimum: 10}
-    validate :ensure_proper_url, on: :create 
-
+    validate :ensure_proper_url, on: :create   
+    after_create :set_expiration
 
     private 
+    RETRIES = 5
     BASE_62_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    
-    # Make sure the URL has proper formatting based on URI standards.
+    # REGEX as follows http(s) optional, www. optional, [text.] mandatory, [text & symbols] mandatory.
+    URL_REGEX = /^((http|https):\/\/)?([\w.-]+\.)?([\w\.-]+\.)[\w\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=]+$/ix   
+    URL_LENGTH = 7
+    # Try to validate whether the URL format is proper
     def ensure_proper_url
-        errors.add(:url, 'provided is not properly formatted.') unless self.url =~ URI::regexp
+        errors.add(:url, 'provided is not properly formatted.') unless self.url.match(URL_REGEX)
     end
     
     def ensure_unique_short_url
-        url_length = 7
         # Send is used because for whatever reason, a private method cannot be accessed via a callback.
-        self.send('base62_encode', url_length)
+        self.send('base62_encode')
 
         # Basically if short_url by the small chance already exists, I want to try again
         # with a high degree of randomness included.
         # Also doubles as validation
-        # counter is set up incase something happened such that the database is getting packed
+        # counter is set up in-case something happened such that the database is getting packed
         counter = 0
-        while self.class.find_by_short_url(self.short_url) || counter != 10
-            self.send('base62_encode', url_length, SecureRandom::urlsafe_base64)
+        while self.class.find_by_short_url(self.short_url) && counter < RETRIES
+            self.send('base62_encode', SecureRandom::urlsafe_base64)
             counter += 1
         end
     end
 
-    def base62_encode(length, seed = "")
+    def base62_encode(seed = "")
         # Find out how many bits you need for the length of url desired
-        bits = (62 ** length).to_s(2).length 
+        bits = (62 ** URL_LENGTH).to_s(2).length 
 
-        # Create a MD5:hash, which always results in 128 bits
+        # Create a MD5:hash, which always results in 128 bits   
         # MD5:hash returns a hex, which needs to be converted to binary
         # Then the binary is converted back to an integer
         num = Digest::MD5.hexdigest(self.url + seed)
             .to_i(16)
             .to_s(2)[0..bits]
             .to_i(2)
-            
-        while self.short_url.length < length && num > 0
+        
+        self.short_url = ""
+        while self.short_url.length < URL_LENGTH && num > 0
             self.short_url << BASE_62_CHARS[num % 62]
             num /= 62
         end
 
+    end
+
+    #sets expiration for url to expire in 1 year.
+    def set_expiration
+        self.expires_at = self.created_at + 1.year
+        self.save!
     end
 end

@@ -6,14 +6,13 @@ class Api::ShortUrlsController < ApplicationController
     # Checks if the URL user inputted already exists in DB
     # If it does, return that URL. Otherwise create a new one.
     def create
-        url = http_wrap(params[:url])
-        @short_url = ShortURL.find_by_url(url)
+        @short_url = ShortURL.find_by_url(params[:url])
         if @short_url
             render :show 
         else 
-            @short_url = ShortURL.new(url: url, short_url: "")
+            @short_url = ShortURL.new(url: params[:url])
             if @short_url.save
-                ScraperWorker.perform_async(url, @short_url.id)
+                ScraperWorker.perform_async(params[:url], @short_url.id)
                 render :show 
             else 
                 render json: @short_url.errors.full_messages, status: 422 
@@ -27,11 +26,6 @@ class Api::ShortUrlsController < ApplicationController
     end
 
     private
-    def http_wrap url
-        url = 'http://' + url unless url.starts_with?('http://') || url.starts_with?('https://')
-        url
-    end
-
     def ensure_params_url
         render json: ['No URL has been provided'], status: 422 unless params[:url]
     end

@@ -9,10 +9,7 @@ class ScraperWorker
         # At least set a title using a Hash.
         raw_html = HTTParty.get(url)
         parse_page = Nokogiri::HTML(raw_html)
-
-
         short_url = ShortURL.find_by_id(url_id)
         short_url.update(title: parse_page.title) if short_url
-        
     end
 end
