@@ -29,6 +29,11 @@
 * Docker has the app running the background, which can be checked by using docker-compose ps. The containers for the apps can be stopped by using docker-compose stop or docker-compose down, although down would remove any data 
 
 ## How to Use
+
+### Important
+* In the case of the heroku site, replace ```http://localhost:3000``` with ```https://minfyurl.herokuapp.com/```
+
+### Local
 * At the moment there is no fancy ui, so API requests have to be done using curl commands, postman, etc, at least for POST requests.
 
 * In your terminal you can run: 
