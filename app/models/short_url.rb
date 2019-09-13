@@ -45,6 +45,8 @@ class ShortURL < ApplicationRecord
             self.send('base62_encode', SecureRandom::urlsafe_base64)
             counter += 1
         end
+
+        self.short_url = "" if counter == RETRIES
     end
 
     def base62_encode(seed = "")
@@ -56,7 +58,7 @@ class ShortURL < ApplicationRecord
         # Then the binary is converted back to an integer
         num = Digest::MD5.hexdigest(self.url + seed)
             .to_i(16)
-            .to_s(2)[0..bits]
+            .to_s(2)[0...bits]
             .to_i(2)
         
         self.short_url = ""
