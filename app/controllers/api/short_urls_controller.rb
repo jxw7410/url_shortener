@@ -6,13 +6,15 @@ class Api::ShortUrlsController < ApplicationController
     # Checks if the URL user inputted already exists in DB
     # If it does, return that URL. Otherwise create a new one.
     def create
-        @short_url = ShortURL.find_by_url(params[:url])
+        url = ShortURL.url_wrap(params[:url])
+        @short_url = ShortURL.find_by_url(url)
         if @short_url
             render :show 
         else 
-            @short_url = ShortURL.new(url: params[:url])
+            @short_url = ShortURL.new(url: url)
             if @short_url.save
-                ScraperWorker.perform_async(params[:url], @short_url.id)
+                # short_url.url may be modified depending on the input
+                ScraperWorker.perform_async(url, @short_url.id)
                 render :show 
             else 
                 render json: @short_url.errors.full_messages, status: 422 
@@ -26,7 +28,13 @@ class Api::ShortUrlsController < ApplicationController
     end
 
     private
+    # Callback to sure the url is properly formatted 
     def ensure_params_url
-        render json: ['No URL has been provided'], status: 422 unless params[:url]
+        if !params[:url]
+            render json: ['No URL has been provided.'], status: 422 
+        else 
+            render json: ['Url format is Improper.'], status: 422 unless ShortURL.validate_url_format(params[:url])
+        end
     end
+
 end

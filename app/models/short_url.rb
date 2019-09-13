@@ -17,20 +17,26 @@ class ShortURL < ApplicationRecord
     # callback to create a unique short_url
     before_validation :ensure_unique_short_url, on: :create
     validates :url, :short_url, presence: true
-    validates :url, length: {minimum: 10}
-    validate :ensure_proper_url, on: :create   
+    validates :url, length: {minimum: 10} 
     after_create :set_expiration
+
+
+    def self.validate_url_format(url)
+        # REGEX as follows http(s) optional, www. optional, [text.] mandatory, [text & symbols] mandatory.
+        url.match /^((http|https):\/\/)?([\w.-]+\.)?([\w\.-]+\.)[\w\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=]+$/ix
+    end
+
+
+    def self.url_wrap(url)
+        url = 'http://' + url unless url.downcase.start_with?('http://') || url.downcase.start_with?('https://') 
+        url
+    end
 
     private 
     RETRIES = 5
     BASE_62_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-    # REGEX as follows http(s) optional, www. optional, [text.] mandatory, [text & symbols] mandatory.
-    URL_REGEX = /^((http|https):\/\/)?([\w.-]+\.)?([\w\.-]+\.)[\w\-\._~:\/\?#\[\]@!\$&'\(\)\*\+,;=]+$/ix   
     URL_LENGTH = 7
-    # Try to validate whether the URL format is proper
-    def ensure_proper_url
-        errors.add(:url, 'provided is not properly formatted.') unless self.url.match(URL_REGEX)
-    end
+
     
     def ensure_unique_short_url
         # Send is used because for whatever reason, a private method cannot be accessed via a callback.

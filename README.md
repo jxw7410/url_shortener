@@ -16,8 +16,8 @@
 * Docker configuration, as well as, other configs within the rails app are dependent on certain environment varibles. Create a .env file in the root directory of app, and copy the content of .sample.env to it.
 
 * In the terminal, or bash, run the following:
-    > * chmod -x setup.sh 
-    > * bash setup.sh
+    > * ```chmod -x setup.sh ```
+    > * ```bash setup.sh```
 
 * After the installations are done, and no errors were present, open localhost:3000, and you should see a blank page with React Root.
 
@@ -30,15 +30,15 @@
 * At the moment there is no fancy ui, so API requests have to be done using curl commands, postman, etc, at least for POST requests.
 
 * In your terminal you can run: 
-    > curl -X POST -d "url=any_url"  http://localhost:3000/api/short_urls
+    > ```curl -X POST -d "url=any_url"  http://localhost:3000/api/short_urls```
 
 * This would return a json with a short_url, and the long url provided
 
 * The short url is a hash, which works by simply using the link:
-    > https://localhost:3000/<short_url>
+    > ```https://localhost:3000/<short_url>```
 
 * Similiarly, if you want to fetch the top 100 most clicked url:
-    > curl http://localhost:3000/api/short_urls
+    > ```curl http://localhost:3000/api/short_urls```
 
 * Or you can access the json via the browser by using the above url.
 
@@ -143,6 +143,7 @@ puts collision
 * However this shows that as database gets filled, the collisions would get exponentially worse. Least to say, this won't scale well.
 
 * Something that is somewhat of an insurance that was set is, that all short URLs have expiration dates, set to 1 year ahead of when they were created. If an expired URL was used, the user won't get redirected, but instead get an error message. The expired URL extry would be deleted from the database as well.
+
 
 
 
