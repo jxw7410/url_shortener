@@ -20,4 +20,5 @@ test:
 production:
   <<: *default
   database: urlshortener_production
+  url: <%= ENV['DATABASE_URL'] %>
   password: <%= ENV['URLSHORTENER_DATABASE_PASSWORD'] %>
