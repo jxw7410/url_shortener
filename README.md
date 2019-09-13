@@ -15,6 +15,8 @@
 
 * Docker configuration, as well as, other configs within the rails app are dependent on certain environment varibles. Create a .env file in the root directory of app, and copy the content of .sample.env to it.
 
+* Before you do the next step, if you have postgresql running on your local machine on port 5432, turn off postgresql.
+
 * In the terminal, or bash, run the following:
     > * ```chmod -x setup.sh ```
     > * ```bash setup.sh```
