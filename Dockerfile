@@ -13,8 +13,8 @@ RUN mkdir /usr/src/app
 WORKDIR /usr/src/app 
 
 COPY Gemfile* ./
-ENV BUNDLER_VERSION 2.0.1
-RUN gem install bundler -v 2.0.1 && bundler -v 
+ENV BUNDLER_VERSION 2.0.2
+RUN gem install bundler && bundler -v 
 RUN bundle install
 COPY . .
 

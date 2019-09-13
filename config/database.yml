@@ -2,13 +2,13 @@ default: &default
   adapter: postgresql
   host: <%= ENV["POSTGRES_HOST"] %>
   username: <%= ENV["POSTGRES_USER"] %>
-  password: <%= ENV["POSTGRES_PASSWORD"] %>
   encoding: unicode
   pool: 2
   timeout: 5000
   
 development:
   <<: *default
+  password: <%= ENV["POSTGRES_PASSWORD"] %>
   database: urlshortener_development
 
 
