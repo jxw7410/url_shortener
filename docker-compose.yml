@@ -1,0 +1,47 @@
+version: "2"
+
+# sets database data to local
+volumes:
+  db-data:
+    external: false
+  redis: 
+
+services: 
+  db:
+    image: postgres:12
+    volumes:
+      - db-data:/usr/local/pgsql/data
+    environment:
+      POSTGRES_USER:
+      POSTGRES_PASSWORD:
+
+  redis:
+    image: redis:5.0.5
+    command: redis-server
+    volumes:
+      - 'redis:/usr/local/redis/data'
+  
+  sidekiq:
+    depends_on:
+      - 'db'
+      - 'redis'
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    volumes:
+      - '.:/usr/src/app'
+    env_file: '.env'
+  
+  app:
+    depends_on:
+      - 'db'
+      - 'redis'
+    build: .
+    volumes:
+      - .:/usr/src/app
+    ports:
+      - "3000:3000"
+    env_file: '.env'
+
+
+
+  

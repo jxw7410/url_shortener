@@ -21,7 +21,7 @@ class Api::ShortUrlsController < ApplicationController
     end 
 
     def index 
-        @urls = ShortURL.all.limit(100)
+        @urls = ShortURL.all.limit(100).order(count: :desc)
         render :index
     end
 
