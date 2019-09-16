@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   require 'sidekiq/web'
   mount Sidekiq::Web => '/sidekiq'
   
-  root to: 'static_pages#root'
+  #root to: 'static_pages#root'
   get '/:short_url', to: 'short_urls#show'
 
   namespace :api, defaults: {format: 'json'} do

@@ -1,5 +1,10 @@
 {
   "name": "urlshortener",
   "private": true,
-  "dependencies": {}
+  "dependencies": {},
+  "scripts" : {
+    "build" : "cd frontend && npm run build && cd ..",
+    "deploy" : "cp -a frontend/build/. public/",
+    "postinstall" : "npm run build && npm run deploy"
+  }
 }

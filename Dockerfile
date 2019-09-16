@@ -18,4 +18,5 @@ RUN gem install bundler && bundler -v
 RUN bundle install
 COPY . .
 
+ENV PORT 3001
 CMD puma -C config/puma.rb
