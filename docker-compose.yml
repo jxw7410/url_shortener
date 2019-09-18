@@ -5,7 +5,7 @@ volumes:
   db-data:
     external: false
   redis: 
-
+  node_module:
 services: 
   db:
     image: postgres:12
@@ -35,9 +35,11 @@ services:
     build: ./frontend
     command: npm start
     volumes:
-      - .:/usr/frontend/app
+      - ./frontend/:/usr/src/app
+      - node_module:/usr/src/app/node_modules # What this is, when dockerfile npm installs, a node_module folder is created, but needs to be accessed via volumes.
     ports:
       - "3000:3000"
+      - "35729:35729"
     env_file: '.env'
 
   app:
